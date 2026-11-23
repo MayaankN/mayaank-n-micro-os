@@ -1,0 +1,72 @@
+================================================================================
+          MAYAANK N - MICRO-OS: BARE-METAL RUST OPERATING SYSTEM               
+================================================================================
+ Project Owner:  Mayaank N
+ USN:            25BTRCL148
+ Course:         Operating Systems (CA6 Engineering Project)
+ Architecture:   x86_64 Bare-Metal (no_std, no_main)
+ Bootloader:     Limine Boot Protocol v8
+ Specialization: Scheduler Engineering - Round Robin with Dynamic Quantum
+================================================================================
+
+[INFO ] [     0 ticks] Initializing kernel bump memory allocator...
+
+================== KERNEL MEMORY DIAGNOSTICS =====================
+Allocator:          Linear Bump Allocator
+Heap Capacity:      2097152 bytes (2048 KiB)
+Allocated Memory:   0 bytes (0 KiB)
+Available Memory:   2097152 bytes (2048 KiB)
+Allocation Count:   0
+==================================================================
+
+[INFO ] [     0 ticks] Initializing 8259 PIC (Remapping IRQs 0-15 to vectors 32-47)...
+[INFO ] [     0 ticks] Loading Interrupt Descriptor Table (IDT)...
+[INFO ] [     0 ticks] Configuring 8254 PIT at 100 Hz...
+[INFO ] [     0 ticks] Spawning controlled kernel tasks into Ready Queue...
+
+================== KERNEL SCHEDULER DIAGNOSTICS ==================
+Timestamp: 0 ticks | Specialization: Dynamic Quantum Round Robin
+Total Context Switches: 0
+Ready Queue Depth:      3
+------------------------------------------------------------------
+TASK ID  NAME               STATE      QUANTUM    CPU TICKS    SWITCHES  
+------------------------------------------------------------------
+Task-1 Compute-Worker     READY      4 ticks 0            0         
+Task-2 Telemetry-Worker   READY      4 ticks 0            0         
+Task-3 Burst-Worker       READY      4 ticks 0            0         
+==================================================================
+
+[INFO ] [     0 ticks] Enabling CPU hardware interrupts (sti)...
+[SCHED] [     0 ticks] Dispatching first task from Ready Queue...
+[SCHED] [     0 ticks] Bootstrap context switch into Task-1 (Quantum: 4 ticks)
+[INFO ] [     0 ticks] Task 1 [Compute-Worker] started. Running iterative compute workloads.
+[TRACE] [     0 ticks] Task 1 [Compute-Worker] cycle #1: Computing math workload
+[SCHED] [     0 ticks] Yield Switch: Task-1 -> Task-2 | Dynamic Quantum: 4 ticks
+[INFO ] [     0 ticks] Task 2 [Telemetry-Worker] started. Monitoring system telemetry.
+[INFO ] [     0 ticks] Task 2 [Telemetry-Worker] generating periodic report #1
+
+================== KERNEL SCHEDULER DIAGNOSTICS ==================
+Timestamp: 0 ticks | Specialization: Dynamic Quantum Round Robin
+Total Context Switches: 2
+Ready Queue Depth:      2
+------------------------------------------------------------------
+TASK ID  NAME               STATE      QUANTUM    CPU TICKS    SWITCHES  
+------------------------------------------------------------------
+Task-1 Compute-Worker     READY      3 ticks 0            1         
+Task-2 Telemetry-Worker   RUNNING    4 ticks 0            1         
+Task-3 Burst-Worker       READY      4 ticks 0            0         
+==================================================================
+
+
+================== KERNEL MEMORY DIAGNOSTICS =====================
+Allocator:          Linear Bump Allocator
+Heap Capacity:      2097152 bytes (2048 KiB)
+Allocated Memory:   98304 bytes (96 KiB)
+Available Memory:   1998848 bytes (1952 KiB)
+Allocation Count:   3
+==================================================================
+
+[SCHED] [     0 ticks] Yield Switch: Task-2 -> Task-3 | Dynamic Quantum: 4 ticks
+[INFO ] [     0 ticks] Task 3 [Burst-Worker] started. Simulating interactive I/O bursts.
+[TRACE] [     0 ticks] Task 3 [Burst-Worker] cycle #1: Interactive short burst complete
+[SCHED] [     0 ticks] Yield Switch: Task-3 -> Task-1 | Dynamic Quantum: 3 ticks

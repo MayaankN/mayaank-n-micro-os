@@ -1,0 +1,18 @@
+# Mayaank N – Micro-OS (CA6 Engineering Project)
+# Student: Mayaank N (USN: 25BTRCL148)
+
+[workspace]
+members = [
+    "kernel",
+    "scheduler_sim",
+]
+resolver = "2"
+
+[profile.dev]
+panic = "abort"
+opt-level = 1
+
+[profile.release]
+panic = "abort"
+opt-level = 2
+lto = true

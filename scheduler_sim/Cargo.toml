@@ -1,0 +1,8 @@
+[package]
+name = "scheduler_sim"
+version = "0.1.0"
+edition = "2021"
+authors = ["Mayaank N <25BTRCL148>"]
+description = "Host-side Dynamic Quantum Scheduler Simulator and Verification Engine"
+
+[dependencies]
