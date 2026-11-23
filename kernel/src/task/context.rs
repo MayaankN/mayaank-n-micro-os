@@ -16,12 +16,12 @@ impl TaskContext {
     ///
     /// The stack frame mimics a task paused inside `switch_context`:
     /// [stack_top - 8]:  Entry point (return address popped by `ret`)
-    /// [stack_top - 16]: r15
-    /// [stack_top - 24]: r14
-    /// [stack_top - 32]: r13
-    /// [stack_top - 40]: r12
-    /// [stack_top - 48]: rbx
-    /// [stack_top - 56]: rbp
+    /// [stack_top - 16]: rbp
+    /// [stack_top - 24]: rbx
+    /// [stack_top - 32]: r12
+    /// [stack_top - 40]: r13
+    /// [stack_top - 48]: r14
+    /// [stack_top - 56]: r15 (top of initial context, popped first by switch_context)
     pub unsafe fn init_stack(&mut self, stack_top: usize, entry_point: usize) {
         // Ensure 16-byte alignment of top of stack
         let aligned_top = stack_top & !0xF;
@@ -30,13 +30,13 @@ impl TaskContext {
         // Entry point is popped by `ret` instruction
         *stack.offset(-1) = entry_point as u64;
 
-        // Callee-saved registers initialized to 0
-        *stack.offset(-2) = 0; // r15
-        *stack.offset(-3) = 0; // r14
-        *stack.offset(-4) = 0; // r13
-        *stack.offset(-5) = 0; // r12
-        *stack.offset(-6) = 0; // rbx
-        *stack.offset(-7) = 0; // rbp
+        // Callee-saved registers initialized to 0 (popped in order: r15, r14, r13, r12, rbx, rbp)
+        *stack.offset(-2) = 0; // rbp (popped 6th)
+        *stack.offset(-3) = 0; // rbx (popped 5th)
+        *stack.offset(-4) = 0; // r12 (popped 4th)
+        *stack.offset(-5) = 0; // r13 (popped 3rd)
+        *stack.offset(-6) = 0; // r14 (popped 2nd)
+        *stack.offset(-7) = 0; // r15 (popped 1st)
 
         // Context pointer holds the top of this prepared frame
         self.rsp = stack.offset(-7) as u64;

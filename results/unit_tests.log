@@ -11,18 +11,8 @@ test tests::test_ready_queue_ordering ... ok
 test tests::test_round_robin_scheduling ... ok
 test tests::test_task_creation ... ok
 test tests::test_timer_ticks_and_quantum_expiration ... ok
-test tests::test_synchronization_mutual_exclusion ... ok
 test tests::test_task_state_transitions ... ok
+test tests::test_synchronization_mutual_exclusion ... ok
 
 test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
-
-running 0 tests
-
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
-
-running 0 tests
-
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 

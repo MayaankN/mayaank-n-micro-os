@@ -70,6 +70,12 @@ If a task acquires a spinlock with interrupts enabled, and an IRQ 0 timer interr
 **Answer:**  
 The 8254 PIT (Programmable Interval Timer) is configured at 100 Hz (10 ms ticks). On each tick, the PIT asserts IRQ 0. The 8259 PIC translates IRQ 0 into interrupt vector 32. The CPU checks the IDT at entry 32 and jumps to `timer_interrupt_entry`, which calls `timer_handler_inner()`. The handler increments the system tick counter, signals EOI to the PIC, and calls `SCHEDULER.on_timer_tick()`. If the task's quantum reaches zero, preemption is requested.
 
+### Q8b: Is context switching in your kernel purely preemptive, cooperative, or hybrid?
+**Answer:**  
+It is a **hybrid cooperative / timer-monitored model**:  
+- The **hardware timer interrupt (PIT IRQ 0)** acts as the real-time clock, continuously advancing ticks, decrementing remaining quantum budgets, and flagging quantum expiration.  
+- The **context switch (`switch_context`)** is triggered cooperatively when tasks invoke `yield_now()`. This preserves stack integrity and avoids complex in-ISR asynchronous stack swapping, while guaranteeing deterministic dynamic time quantum enforcement.
+
 ### Q9: Why did you have to remap the 8259 PIC?
 **Answer:**  
 In IBM PC compatibles, the 8259 PIC defaults to mapping IRQs 0–7 to interrupt vectors 8–15. In protected and long mode, vectors 8–15 are reserved for CPU exceptions (e.g., vector 8 is Double Fault, 13 is General Protection Fault, 14 is Page Fault). If an IRQ 0 timer tick fires without remapping, the CPU treats it as a Double Fault exception! Remapping PIC1 to vector 32 (`0x20`) and PIC2 to vector 40 (`0x28`) prevents hardware IRQs from colliding with CPU exceptions.

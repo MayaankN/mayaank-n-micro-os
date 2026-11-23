@@ -2,7 +2,7 @@
 # Mayaank N - Micro-OS Master Test Suite Runner
 # Student: Mayaank N (25BTRCL148)
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -23,7 +23,7 @@ echo ""
 source ~/.cargo/env
 
 echo "[STEP 1/4] Running Automated Unit Tests (Scheduler, Tasks, Allocator, Sync)..."
-cargo test --package scheduler_sim --target x86_64-unknown-linux-gnu | tee results/unit_tests.log
+cargo test --package scheduler_sim --lib --target x86_64-unknown-linux-gnu | tee results/unit_tests.log
 
 echo ""
 echo "[STEP 2/4] Compiling Bare-Metal Rust Kernel (no_std, no_main)..."

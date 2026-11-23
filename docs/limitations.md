@@ -25,6 +25,11 @@
 - **Limitation:** The scheduler maintains a statically allocated array of `MAX_TASKS = 16` task control blocks and a 32-element ring buffer ready queue.
 - **Impact:** The system cannot exceed 16 concurrent tasks simultaneously without recompilation.
 
+### 1.5 Context Dispatch: Hybrid Cooperative Dispatch vs. In-ISR Preemptive Stack Swapping
+- **Implementation Status:** The 8254 PIT hardware timer interrupt (IRQ 0 / IDT vector 32) fires at 100 Hz, increments `SYSTEM_TICKS`, tracks quantum consumption via `sched.on_timer_tick()`, and detects quantum exhaustion (`reschedule = true`). Low-level context switching (`switch_context`) is dispatched via cooperative task yields (`yield_now()`) using callee-saved register saving on dedicated per-task stacks.
+- **Architectural Boundary:** True asynchronous preemptive stack replacement directly inside the timer ISR (modifying the interrupted CPU interrupt frame before `iretq`) was intentionally deferred in this educational micro-OS to maintain stack isolation simplicity and prevent nested kernel re-entrancy bugs without a full TSS (Task State Segment) IST (Interrupt Stack Table) implementation.
+- **Impact:** Tasks cooperatively yield at loop boundaries, while the hardware timer continuously monitors and regulates dynamic time quantum budgets.
+
 ---
 
 ## 2. Future Engineering Roadmap
