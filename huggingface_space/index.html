@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mayaank N – Micro-OS Scheduler Simulator</title>
   <meta name="description" content="Interactive Companion Simulator for Bare-Metal x86_64 Rust Microkernel featuring Dynamic Quantum Round Robin Scheduling.">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smqk74XY45hQltWFL3UUCvX07UB9CX1445VcAQBOlC94w5" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+NWtTlCXcAbUK14nVGu480zQBrcelFYzdnT2KJa2mvcCAe" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
   <style>
     :root {
       --bg: #090d16;
@@ -29,16 +29,21 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
     body {
       background-color: var(--bg);
       color: var(--text);
       font-family: var(--font);
       line-height: 1.5;
-      padding: 24px 20px 48px;
+      padding: 20px 16px 40px;
     }
 
     .container {
-      max-width: 1380px;
+      max-width: 1200px;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -100,11 +105,11 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
     }
     .student-item {
       display: flex;
@@ -128,11 +133,13 @@
     /* Main Grid Layout */
     .dashboard-layout {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 24px;
+      grid-template-columns: 290px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
     }
-    @media (max-width: 980px) {
+    @media (max-width: 960px) {
       .dashboard-layout { grid-template-columns: 1fr; }
+      .controls-panel { position: static; top: 0; }
     }
 
     /* Sidebar / Controls */
@@ -140,7 +147,7 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 20px;
+      padding: 18px;
       height: fit-content;
       position: sticky;
       top: 20px;
@@ -237,24 +244,26 @@
 
     /* Main Display Area */
     .main-telemetry {
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
 
     /* Metric Cards */
     .metrics-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 12px;
     }
     .metric-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 16px 20px;
+      padding: 14px 18px;
       position: relative;
       overflow: hidden;
+      min-width: 0;
     }
     .metric-card::before {
       content: "";
@@ -263,7 +272,7 @@
       background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
     }
     .metric-title {
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--text-muted);
@@ -273,16 +282,17 @@
     .metric-value-row {
       display: flex;
       align-items: baseline;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .metric-val {
-      font-size: 1.7rem;
+      font-size: 1.55rem;
       font-weight: 800;
       font-family: var(--mono);
       color: #fff;
     }
     .metric-delta {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 4px;
@@ -297,16 +307,19 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 20px 24px;
+      padding: 18px 20px;
+      min-width: 0;
     }
     .telemetry-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .card-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -319,10 +332,16 @@
       position: relative;
       width: 100%;
       overflow-x: auto;
-      padding: 10px 0;
+      -webkit-overflow-scrolling: touch;
+      padding: 6px 0;
     }
     canvas {
       display: block;
+      width: 100%;
+      max-width: 100%;
+      border-radius: 6px;
+      cursor: crosshair;
+    }
       border-radius: 6px;
       cursor: crosshair;
     }
@@ -419,11 +438,13 @@
     .table-container {
       width: 100%;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     table {
       width: 100%;
+      min-width: 460px;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       text-align: left;
     }
     th {
@@ -431,7 +452,7 @@
       background: #1e293b;
       color: var(--text-muted);
       font-weight: 600;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -439,7 +460,7 @@
       padding: 10px 12px;
       border-bottom: 1px solid var(--card-border);
       font-family: var(--mono);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(255, 255, 255, 0.02); }
@@ -449,23 +470,25 @@
       background: #0d131f;
       border: 1px solid var(--card-border);
       border-radius: 8px;
-      padding: 20px;
+      padding: 18px;
       margin-top: 12px;
+      overflow: hidden;
     }
     .math-formula-box {
       background: #111827;
       border: 1px solid #1f293d;
       border-radius: 6px;
-      padding: 16px;
+      padding: 16px 12px;
       margin: 14px 0;
       text-align: center;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .math-principles {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
       margin-top: 14px;
     }
     .principle-box {
@@ -629,7 +652,7 @@
 
         <div class="gantt-wrapper">
           <div id="gantt-tooltip"></div>
-          <canvas id="gantt-canvas-dynamic" width="940" height="200"></canvas>
+          <canvas id="gantt-canvas-dynamic" height="220"></canvas>
         </div>
         <div class="timeline-legend" id="legend-dynamic"></div>
 
@@ -639,7 +662,7 @@
           <div class="accordion-content">
             <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Shows baseline Round Robin execution without dynamic quantum adaptation (fixed time quantum of <span id="label-fixed-q">4</span> ticks).</p>
             <div class="gantt-wrapper">
-              <canvas id="gantt-canvas-fixed" width="940" height="200"></canvas>
+              <canvas id="gantt-canvas-fixed" height="220"></canvas>
             </div>
             <div class="timeline-legend" id="legend-fixed"></div>
           </div>
@@ -706,8 +729,10 @@
             The dynamic quantum algorithm continuously tunes each task's allocated time slice \(Q_{dyn}\) according to its historical CPU burst execution and the real-time depth of the ready queue:
           </p>
 
-          <div class="math-formula-box">
-            $$Q_{dyn}(T) = \text{clamp}\left( Q_{base} + \text{sgn}(\text{burst}_{prev} - Q_{curr}) \cdot \Delta - \beta \cdot \max(0, |Q_{ready}| - 3), Q_{min}, Q_{max} \right)$$
+          <div class="math-formula-box" id="math-formula">
+            <span class="math-fallback" style="font-family: var(--mono); font-size: 0.95rem; color: #a5b4fc; letter-spacing: 0.02em;">
+              <em>Q</em><sub>dyn</sub>(<em>T</em>) = clamp( <em>Q</em><sub>base</sub> + sgn(burst<sub>prev</sub> &minus; <em>Q</em><sub>curr</sub>) &middot; &Delta; &minus; &beta; &middot; max(0, |<em>Q</em><sub>ready</sub>| &minus; 3), <em>Q</em><sub>min</sub>, <em>Q</em><sub>max</sub> )
+            </span>
           </div>
 
           <div class="math-principles">
@@ -944,12 +969,12 @@ function updatePresetTaskList(presetKey) {
 function renderGantt(canvas, result, distinctTasks) {
   const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  const width = rect.width || 940;
+  const parentWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 0;
+  const width = Math.max(parentWidth || canvas.clientWidth || 700, 460);
   const height = 220;
 
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
   canvas.style.width = width + "px";
   canvas.style.height = height + "px";
   ctx.scale(dpr, dpr);
@@ -957,8 +982,8 @@ function renderGantt(canvas, result, distinctTasks) {
   ctx.clearRect(0, 0, width, height);
 
   const totalTime = Math.max(result.totalTime, 1);
-  const marginLeft = 140;
-  const marginRight = 24;
+  const marginLeft = width < 600 ? 100 : 140;
+  const marginRight = 20;
   const marginTop = 30;
   const marginBottom = 34;
   const chartWidth = width - marginLeft - marginRight;
@@ -1184,9 +1209,62 @@ window.addEventListener("resize", () => {
   renderGantt(canvasFixed, resFixed, tasksConfig);
 });
 
+// --- KaTeX Mathematical Rendering Controller ---
+function renderMath() {
+  const formulaLatex = "Q_{dyn}(T) = \\text{clamp}\\left( Q_{base} + \\text{sgn}(\\text{burst}_{prev} - Q_{curr}) \\cdot \\Delta - \\beta \\cdot \\max(0, |Q_{ready}| - 3), Q_{min}, Q_{max} \\right)";
+  const formulaElem = document.getElementById("math-formula");
+
+  // 1. Direct KaTeX rendering for the primary dynamic quantum equation
+  if (typeof katex !== "undefined" && formulaElem) {
+    try {
+      katex.render(formulaLatex, formulaElem, {
+        displayMode: true,
+        throwOnError: false
+      });
+    } catch (err) {
+      console.warn("KaTeX direct formula render failed:", err);
+    }
+  }
+
+  // 2. Auto-render extension for inline mathematical notation across cards
+  if (typeof renderMathInElement === "function") {
+    try {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "\\(", right: "\\)", display: false },
+          { left: "$", right: "$", display: false }
+        ],
+        ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+        throwOnError: false
+      });
+    } catch (err) {
+      console.warn("KaTeX auto-render extension error:", err);
+    }
+  }
+}
+
+// Polling scheduler ensuring KaTeX renders whether scripts load before or after DOM ready
+function scheduleMathRender() {
+  renderMath();
+  let attempts = 0;
+  const timer = setInterval(() => {
+    attempts++;
+    if (typeof katex !== "undefined" || attempts > 25) {
+      renderMath();
+      clearInterval(timer);
+    }
+  }, 120);
+}
+
+document.addEventListener("DOMContentLoaded", scheduleMathRender);
+window.addEventListener("load", scheduleMathRender);
+
 // Initial boot
 updatePresetTaskList("default");
 runSimulation();
+scheduleMathRender();
 </script>
 
 </body>
