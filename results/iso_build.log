@@ -1,5 +1,33 @@
 [BUILD] Compiling Mayaank Micro-OS kernel (x86_64-unknown-none)...
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.68s
 [BUILD] Preparing ISO filesystem structure...
 [BUILD] Generating bootable ISO using xorriso...
+xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+Drive current: -outdev 'stdio:mayaank_os.iso'
+Media current: stdio file, overwriteable
+Media status : is blank
+Media summary: 0 sessions, 0 data blocks, 0 data, 71.8g free
+Added to ISO image: directory '/'='/mnt/c/Users/Mayaank/Downloads/mayaank-micro-os/iso_root'
+xorriso : UPDATE :       9 files added in 1 seconds
+xorriso : UPDATE :       9 files added in 1 seconds
+xorriso : UPDATE :  5.82% done
+xorriso : UPDATE :  38.52% done
+xorriso : UPDATE :  89.19% done
+ISO image produced: 3468 sectors
+Written to medium : 3468 sectors at LBA 0
+Writing to 'stdio:mayaank_os.iso' completed successfully.
+
 [BUILD] Installing Limine BIOS bootloader onto ISO...
+Physical block size of 512 bytes.
+Installing to GPT. Logical block size of 512 bytes.
+Secondary header at LBA 0x362f.
+Secondary header valid.
+GPT partition NOT specified. Attempting GPT embedding.
+New maximum count of partition entries: 44.
+Stage 2 to be located at 0x1a00 and 0x6bf800.
+Reminder: Remember to copy the limine-bios.sys file in either
+          the root, /boot, /limine, or /boot/limine directories of
+          one of the partitions on the device, or boot will fail!
+Limine BIOS stages installed successfully!
 [SUCCESS] Mayaank Micro-OS bootable ISO created: mayaank_os.iso
