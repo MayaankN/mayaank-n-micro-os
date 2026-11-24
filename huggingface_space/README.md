@@ -3,8 +3,7 @@ title: Mayaank N - Micro-OS Scheduler Simulator
 emoji: ⚙️
 colorFrom: indigo
 colorTo: blue
-sdk: streamlit
-app_file: app.py
+sdk: static
 pinned: false
 license: mit
 ---
@@ -12,7 +11,6 @@ license: mit
 # Mayaank N – Micro-OS Scheduler Simulator (Hugging Face Companion)
 
 **Student Name:** Mayaank N  
-**USN:** 25BTRCL148  
 **Project:** Rust Micro-OS Engineering Project (CA6)  
 **Specialization:** Scheduler Engineering – Round Robin with Dynamic Quantum  
 
@@ -29,6 +27,16 @@ license: mit
 - **Metrics Comparison:** Compares Waiting Time, Turnaround Time, and Context Switches between Standard RR and Dynamic RR.
 
 ## Running Locally
+
+### 1. Free Static Space (Recommended — Instant Load)
+Simply open `index.html` in any modern web browser, or serve it using Python's built-in static server:
+```bash
+python3 -m http.server 8000
+# Open http://localhost:8000 in your browser
+```
+
+### 2. Streamlit Version (Preserved Companion)
+The original Streamlit implementation is preserved in `app.py`:
 ```bash
 pip install -r requirements.txt
 streamlit run app.py

@@ -22,4 +22,5 @@ Thumbs.db
 # Exclude large verbose execution trace logs (retained locally, excluded from public repo)
 traces/qemu_clean_cycles.log
 traces/qemu_execution_trace.txt
+results/virtualbox-serial.log
 

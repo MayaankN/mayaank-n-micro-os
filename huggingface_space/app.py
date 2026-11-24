@@ -1,7 +1,6 @@
 """
 Mayaank N – Micro-OS Scheduler Simulator (Hugging Face Companion)
 Student Name: Mayaank N
-USN: 25BTRCL148
 Course: Operating Systems CA6 Project
 Specialization: Scheduler Engineering – Round Robin with Dynamic Quantum
 """
@@ -31,7 +30,7 @@ st.warning(
 with st.expander("🎓 Student & Project Information", expanded=True):
     col_a, col_b, col_c, col_d = st.columns(4)
     col_a.metric("Student Name", "Mayaank N")
-    col_b.metric("USN", "25BTRCL148")
+    col_b.metric("Course", "OS Engineering (CA6)")
     col_c.metric("Architecture", "x86_64 Bare-Metal")
     col_d.metric("Bootloader", "Limine v8")
 
@@ -267,4 +266,4 @@ $$Q_{dyn}(T) = \text{clamp}\left( Q_{base} + \text{sgn}(\text{burst}_{prev} - Q_
 """)
 
 st.markdown("---")
-st.caption("Mayaank N – 25BTRCL148 | Department of Computer Science & Engineering | CA6 Micro-OS Project")
+st.caption("Mayaank N | Department of Computer Science & Engineering | CA6 Micro-OS Project")

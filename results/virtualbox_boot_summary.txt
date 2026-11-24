@@ -1,0 +1,143 @@
+================================================================================
+          MAYAANK N - MICRO-OS: BARE-METAL RUST OPERATING SYSTEM
+================================================================================
+ Project Owner:  Mayaank N
+ Course:         Operating Systems (CA6 Engineering Project)
+ Architecture:   x86_64 Bare-Metal (no_std, no_main)
+ Bootloader:     Limine Boot Protocol v8
+ Specialization: Scheduler Engineering - Round Robin with Dynamic Quantum
+ Execution Env:  Oracle VM VirtualBox (UEFI Mode, Serial COM1 Redirect)
+ Evidence Log:   results/virtualbox-serial.log (42,018 lines, 2.30 MB)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. KERNEL BOOTSTRAP & HARDWARE SUBSYSTEM INITIALIZATION
+--------------------------------------------------------------------------------
+[INFO ] [     0 ticks] Initializing kernel bump memory allocator...
+
+================== KERNEL MEMORY DIAGNOSTICS =====================
+Allocator:          Linear Bump Allocator
+Heap Capacity:      2097152 bytes (2048 KiB)
+Allocated Memory:   0 bytes (0 KiB)
+Available Memory:   2097152 bytes (2048 KiB)
+Allocation Count:   0
+==================================================================
+
+[INFO ] [     0 ticks] Initializing 8259 PIC (Remapping IRQs 0-15 to vectors 32-47)...
+[INFO ] [     0 ticks] Loading Interrupt Descriptor Table (IDT)...
+[INFO ] [     0 ticks] Configuring 8254 PIT at 100 Hz...
+[INFO ] [     0 ticks] Spawning controlled kernel tasks into Ready Queue...
+
+================== KERNEL SCHEDULER DIAGNOSTICS ==================
+Timestamp: 0 ticks | Specialization: Dynamic Quantum Round Robin
+Total Context Switches: 0
+Ready Queue Depth:      3
+------------------------------------------------------------------
+TASK ID  NAME               STATE      QUANTUM    CPU TICKS    SWITCHES
+------------------------------------------------------------------
+Task-1 Compute-Worker     READY      4 ticks 0            0
+Task-2 Telemetry-Worker   READY      4 ticks 0            0
+Task-3 Burst-Worker       READY      4 ticks 0            0
+==================================================================
+
+--------------------------------------------------------------------------------
+2. CPU INTERRUPT ENABLE & TASK DISPATCH
+--------------------------------------------------------------------------------
+[INFO ] [     0 ticks] Enabling CPU hardware interrupts (sti)...
+[SCHED] [     0 ticks] Dispatching first task from Ready Queue...
+[SCHED] [     1 ticks] Bootstrap context switch into Task-1 (Quantum: 4 ticks)
+[INFO ] [     1 ticks] Task 1 [Compute-Worker] started. Running iterative compute workloads.
+[TRACE] [     2 ticks] Task 1 [Compute-Worker] cycle #1: Computing math workload
+[SCHED] [     2 ticks] Yield Switch: Task-1 -> Task-2 | Dynamic Quantum: 4 ticks
+[INFO ] [     2 ticks] Task 2 [Telemetry-Worker] started. Monitoring system telemetry.
+[INFO ] [     2 ticks] Task 2 [Telemetry-Worker] generating periodic report #1
+
+================== KERNEL SCHEDULER DIAGNOSTICS ==================
+Timestamp: 2 ticks | Specialization: Dynamic Quantum Round Robin
+Total Context Switches: 2
+Ready Queue Depth:      2
+------------------------------------------------------------------
+TASK ID  NAME               STATE      QUANTUM    CPU TICKS    SWITCHES
+------------------------------------------------------------------
+Task-1 Compute-Worker     READY      3 ticks 1            1
+Task-2 Telemetry-Worker   RUNNING    4 ticks 0            1
+Task-3 Burst-Worker       READY      4 ticks 0            0
+==================================================================
+
+--------------------------------------------------------------------------------
+3. MID-EXECUTION TELEMETRY & DYNAMIC QUANTUM ADAPTATION
+--------------------------------------------------------------------------------
+[SCHED] [  1477 ticks] Yield Switch: Task-2 -> Task-3 | Dynamic Quantum: 2 ticks
+[TRACE] [  1477 ticks] Task 3 [Burst-Worker] cycle #713: Interactive short burst complete
+[SCHED] [  1477 ticks] Yield Switch: Task-3 -> Task-1 | Dynamic Quantum: 2 ticks
+[TRACE] [  1477 ticks] Task 1 [Compute-Worker] cycle #714: Computing math workload
+[SCHED] [  1477 ticks] Yield Switch: Task-1 -> Task-2 | Dynamic Quantum: 5 ticks
+[INFO ] [  1478 ticks] Task 2 [Telemetry-Worker] generating periodic report #714
+
+================== KERNEL SCHEDULER DIAGNOSTICS ==================
+Timestamp: 1478 ticks | Specialization: Dynamic Quantum Round Robin
+Total Context Switches: 2141
+Ready Queue Depth:      2
+------------------------------------------------------------------
+TASK ID  NAME               STATE      QUANTUM    CPU TICKS    SWITCHES
+------------------------------------------------------------------
+Task-1 Compute-Worker     READY      2 ticks 125          714
+Task-2 Telemetry-Worker   RUNNING    5 ticks 1192         714
+Task-3 Burst-Worker       READY      2 ticks 160          713
+==================================================================
+
+--------------------------------------------------------------------------------
+4. FINAL STABLE EXECUTION SNAPSHOT BEFORE VM SHUTDOWN
+--------------------------------------------------------------------------------
+[SCHED] [  5513 ticks] Yield Switch: Task-2 -> Task-3 | Dynamic Quantum: 2 ticks
+[TRACE] [  5513 ticks] Task 3 [Burst-Worker] cycle #1498: Interactive short burst complete
+[SCHED] [  5513 ticks] Yield Switch: Task-3 -> Task-1 | Dynamic Quantum: 2 ticks
+[TRACE] [  5513 ticks] Task 1 [Compute-Worker] cycle #1499: Computing math workload
+[SCHED] [  5513 ticks] Yield Switch: Task-1 -> Task-2 | Dynamic Quantum: 11 ticks
+[INFO ] [  5513 ticks] Task 2 [Telemetry-Worker] generating periodic report #1499
+
+================== KERNEL SCHEDULER DIAGNOSTICS ==================
+Timestamp: 5513 ticks | Specialization: Dynamic Quantum Round Robin
+Total Context Switches: 4496
+Ready Queue Depth:      2
+------------------------------------------------------------------
+TASK ID  NAME               STATE      QUANTUM    CPU TICKS    SWITCHES
+------------------------------------------------------------------
+Task-1 Compute-Worker     READY      2 ticks 702          1499
+Task-2 Telemetry-Worker   RUNNING    11 ticks 4092         1499
+Task-3 Burst-Worker       READY      2 ticks 719          1498
+==================================================================
+
+================== KERNEL MEMORY DIAGNOSTICS =====================
+Allocator:          Linear Bump Allocator
+Heap Capacity:      2097152 bytes (2048 KiB)
+Allocated Memory:   98304 bytes (96 KiB)
+Available Memory:   1998848 bytes (1952 KiB)
+Allocation Count:   3
+==================================================================
+
+[SCHED] [  5515 ticks] Yield Switch: Task-2 -> Task-3 | Dynamic Quantum: 2 ticks
+[TRACE] [  5515 ticks] Task 3 [B
+[Note: Log output ended mid-message during Task 3 cycle when the VM was powered off]
+
+--------------------------------------------------------------------------------
+5. EMPIRICAL VALIDATION & AUDIT SUMMARY
+--------------------------------------------------------------------------------
+- Total Timer Ticks Elapsed:        5,515 ticks (~55.15 seconds @ 100 Hz PIT)
+- Total Completed Context Switches: 4,496 switches
+- Task Execution Cycles:
+    * Task-1 (Compute-Worker):      1,499 cycles (702 CPU ticks)
+    * Task-2 (Telemetry-Worker):    1,499 cycles (4,092 CPU ticks)
+    * Task-3 (Burst-Worker):        1,498 cycles (719 CPU ticks)
+- Dynamic Quantum Adaptation:
+    * Interactive Burst Worker:     Adapted downward to Q_min = 2 ticks
+    * Telemetry/Compute Workers:    Expanded dynamically up to 11 ticks
+- Serial Log Scan Results (42,018 lines scanned):
+    * Detected Kernel Panics:       0 reported in log
+    * Detected CPU Faults/Aborts:   0 reported in log
+- Memory Allocator State:
+    * Observed Heap Usage:          98,304 bytes (96 KiB allocated out of 2 MiB / 2,097,152 bytes)
+    * Total Allocations:            3 task stacks (no dynamic allocations during scheduler runtime)
+- VirtualBox Execution Status:
+    * Outcome:                      Kernel successfully booted and ran its scheduler in the tested VirtualBox configuration.
+================================================================================

@@ -12,7 +12,6 @@ A bare-metal educational microkernel written in safe and systems-level Rust (`no
 ## 👤 Student & Project Metadata
 
 - **Student Name:** Mayaank N
-- **USN:** 25BTRCL148
 - **Project Title:** Rust Micro-OS Engineering Project
 - **Course:** Operating System Concepts (CA6)
 - **Specialization:** Scheduler Engineering
@@ -144,5 +143,5 @@ A separate interactive companion scheduler simulator is located in `huggingface_
 
 ## 📜 Academic Integrity & License
 
-This project was developed by **Mayaank N (USN: 25BTRCL148)** for the CA6 Operating Systems Engineering Coursework.  
+This project was developed by **Mayaank N** for the CA6 Operating Systems Engineering Coursework.<br>
 Distributed under the MIT License.

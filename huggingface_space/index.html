@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mayaank N – Micro-OS Scheduler Simulator</title>
+  <meta name="description" content="Interactive Companion Simulator for Bare-Metal x86_64 Rust Microkernel featuring Dynamic Quantum Round Robin Scheduling.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smqk74XY45hQltWFL3UUCvX07UB9CX1445VcAQBOlC94w5" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+NWtTlCXcAbUK14nVGu480zQBrcelFYzdnT2KJa2mvcCAe" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1e293b;
+      --card-hover: #1e293b;
+      --text: #f3f4f6;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-glow: rgba(99, 102, 241, 0.2);
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --mono: "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.5;
+      padding: 24px 20px 48px;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: var(--primary-glow);
+      color: #a5b4fc;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .header-caption {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Disclaimer Box */
+    .disclaimer-box {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-left: 4px solid var(--accent-amber);
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      font-size: 0.88rem;
+      color: #fde68a;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .disclaimer-icon { font-size: 1.25rem; flex-shrink: 0; }
+    .disclaimer-text strong { color: #fff; font-weight: 700; }
+
+    /* Student Info Bar */
+    .student-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .student-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .student-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .student-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--mono);
+    }
+
+    /* Main Grid Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 980px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Sidebar / Controls */
+    .controls-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 20px;
+    }
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .slider-val {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #334155;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+    select {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      outline: none;
+      cursor: pointer;
+    }
+    select:focus {
+      border-color: var(--primary);
+    }
+    .preset-task-list {
+      margin-top: 14px;
+      padding: 10px;
+      background: #0d131f;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.78rem;
+    }
+    .preset-task-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--mono);
+    }
+    .preset-task-item:last-child { border-bottom: none; }
+    .badge-pill {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .badge-cpu { background: rgba(244, 63, 94, 0.2); color: #fb7185; }
+    .badge-bal { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+    .badge-io { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+
+    /* Main Display Area */
+    .main-telemetry {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Metric Cards */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+    }
+    .metric-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .metric-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .metric-val {
+      font-size: 1.7rem;
+      font-weight: 800;
+      font-family: var(--mono);
+      color: #fff;
+    }
+    .metric-delta {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--mono);
+    }
+    .delta-green { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .delta-red { background: rgba(244, 63, 94, 0.2); color: #fb7185; }
+    .delta-neutral { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+
+    /* Content Cards */
+    .telemetry-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+    .telemetry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+
+    /* Gantt Chart Container */
+    .gantt-wrapper {
+      position: relative;
+      width: 100%;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    canvas {
+      display: block;
+      border-radius: 6px;
+      cursor: crosshair;
+    }
+    .timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    /* Tooltip */
+    #gantt-tooltip {
+      position: absolute;
+      display: none;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid #334155;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      color: #fff;
+      pointer-events: none;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    /* Accordion / Expander */
+    details {
+      background: #0d131f;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+    summary {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      user-select: none;
+      outline: none;
+      transition: background 0.2s;
+    }
+    summary:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+    .accordion-content {
+      padding: 16px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: #fff; }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Tables */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    th {
+      padding: 10px 12px;
+      background: #1e293b;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--card-border);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Math & Documentation Section */
+    .math-card {
+      background: #0d131f;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 12px;
+    }
+    .math-formula-box {
+      background: #111827;
+      border: 1px solid #1f293d;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 14px 0;
+      text-align: center;
+      font-size: 1.1rem;
+      overflow-x: auto;
+    }
+    .math-principles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .principle-box {
+      background: #111827;
+      border: 1px solid #1f293d;
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 0.85rem;
+    }
+    .principle-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="header-title-row">
+      <h1>⚙️ Mayaank N – Micro-OS Scheduler Simulator</h1>
+      <span class="header-badge">Companion Simulator</span>
+    </div>
+    <p class="header-caption">Interactive Algorithmic Telemetry & Verification Engine for Bare-Metal x86_64 Rust Microkernel (CA6 Engineering Project)</p>
+  </header>
+
+  <!-- Educational Disclaimer -->
+  <div class="disclaimer-box">
+    <div class="disclaimer-icon">⚠️</div>
+    <div class="disclaimer-text">
+      <strong>EDUCATIONAL SIMULATOR NOTICE:</strong> This application is a high-level scheduler simulation and telemetry companion. It demonstrates the mathematical principles of Round Robin and Dynamic Quantum scheduling. It is <strong>not</strong> the bare-metal kernel itself (the bare-metal kernel boots via Limine Boot Protocol v8 in QEMU on x86_64).
+    </div>
+  </div>
+
+  <!-- Student Info Card -->
+  <div class="student-card">
+    <div class="student-item">
+      <span class="student-label">Student Name</span>
+      <span class="student-val">Mayaank N</span>
+    </div>
+    <div class="student-item">
+      <span class="student-label">Course</span>
+      <span class="student-val">Operating Systems (CA6)</span>
+    </div>
+    <div class="student-item">
+      <span class="student-label">Target Architecture</span>
+      <span class="student-val">x86_64 Bare-Metal</span>
+    </div>
+    <div class="student-item">
+      <span class="student-label">Bootloader</span>
+      <span class="student-val">Limine v8 (HHDM)</span>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="dashboard-layout">
+
+    <!-- Controls Panel -->
+    <aside class="controls-panel">
+      <div class="panel-title">
+        <span>🔧</span> Scheduler Configuration
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="preset-select">Workload Preset</label>
+        <select id="preset-select">
+          <option value="default">Default Kernel Tasks (Compute, Telemetry, Burst)</option>
+          <option value="heavy">Heavy CPU-bound Workload</option>
+          <option value="interactive">Interactive / Yielding Workload</option>
+          <option value="mixed">Mixed Heterogeneous Workload</option>
+        </select>
+        <div class="preset-task-list" id="preset-task-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label-row">
+          <span class="form-label">Base Quantum (Q_base)</span>
+          <span class="slider-val" id="val-base-q">4 ticks</span>
+        </div>
+        <input type="range" id="slider-base-q" min="1" max="10" value="4" step="1">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label-row">
+          <span class="form-label">Minimum Quantum (Q_min)</span>
+          <span class="slider-val" id="val-min-q">2 ticks</span>
+        </div>
+        <input type="range" id="slider-min-q" min="1" max="4" value="2" step="1">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label-row">
+          <span class="form-label">Maximum Quantum (Q_max)</span>
+          <span class="slider-val" id="val-max-q">12 ticks</span>
+        </div>
+        <input type="range" id="slider-max-q" min="6" max="20" value="12" step="1">
+      </div>
+
+      <button id="reset-btn" style="width: 100%; background: #1e293b; color: var(--text-muted); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Reset to Defaults</button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-telemetry">
+
+      <!-- Metrics Row -->
+      <section class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-title">Dynamic Context Switches</div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="metric-dyn-cs">0</span>
+            <span class="metric-delta" id="delta-cs">-0</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-title">Fixed RR Context Switches</div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="metric-fixed-cs">0</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-title">Avg Waiting Time (Dynamic)</div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="metric-dyn-wait">0.00</span>
+            <span class="metric-delta" id="delta-wait">-0.00</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-title">Avg Turnaround Time</div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="metric-dyn-tat">0.00</span>
+            <span class="metric-delta" id="delta-tat">-0.00</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Gantt Chart Card -->
+      <section class="telemetry-card">
+        <div class="telemetry-header">
+          <h2 class="card-title"><span>📅</span> Dynamic Quantum Scheduling Timeline (Gantt Chart)</h2>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Visual timeline of executed time slices. Hover over slices for quantum, arrival, and duration telemetry.</p>
+
+        <div class="gantt-wrapper">
+          <div id="gantt-tooltip"></div>
+          <canvas id="gantt-canvas-dynamic" width="940" height="200"></canvas>
+        </div>
+        <div class="timeline-legend" id="legend-dynamic"></div>
+
+        <!-- Collapsible Baseline Timeline -->
+        <details>
+          <summary>🔍 View Baseline Standard Round Robin Timeline (Fixed Quantum)</summary>
+          <div class="accordion-content">
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">Shows baseline Round Robin execution without dynamic quantum adaptation (fixed time quantum of <span id="label-fixed-q">4</span> ticks).</p>
+            <div class="gantt-wrapper">
+              <canvas id="gantt-canvas-fixed" width="940" height="200"></canvas>
+            </div>
+            <div class="timeline-legend" id="legend-fixed"></div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Per-Task Table Card -->
+      <section class="telemetry-card">
+        <div class="telemetry-header">
+          <h2 class="card-title"><span>📋</span> Per-Task Scheduling Results</h2>
+        </div>
+
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="tab-dynamic">Dynamic Quantum Scheduling</button>
+          <button class="tab-btn" data-tab="tab-fixed">Fixed Quantum Scheduling</button>
+        </div>
+
+        <div class="tab-pane active" id="tab-dynamic">
+          <div class="table-container">
+            <table id="table-dynamic">
+              <thead>
+                <tr>
+                  <th>Task ID</th>
+                  <th>Task Name</th>
+                  <th>Workload</th>
+                  <th>Arrival</th>
+                  <th>Burst</th>
+                  <th>Adapted Quantum</th>
+                  <th>Wait Time</th>
+                  <th>Turnaround</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="tab-fixed">
+          <div class="table-container">
+            <table id="table-fixed">
+              <thead>
+                <tr>
+                  <th>Task ID</th>
+                  <th>Task Name</th>
+                  <th>Workload</th>
+                  <th>Arrival</th>
+                  <th>Burst</th>
+                  <th>Fixed Quantum</th>
+                  <th>Wait Time</th>
+                  <th>Turnaround</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mathematical Model & Documentation -->
+      <section class="telemetry-card">
+        <h2 class="card-title"><span>🧠</span> Mathematical Specialization: Dynamic Time Quantum Adaptation</h2>
+        <div class="math-card">
+          <p style="font-size: 0.88rem; color: var(--text-muted);">
+            The dynamic quantum algorithm continuously tunes each task's allocated time slice \(Q_{dyn}\) according to its historical CPU burst execution and the real-time depth of the ready queue:
+          </p>
+
+          <div class="math-formula-box">
+            $$Q_{dyn}(T) = \text{clamp}\left( Q_{base} + \text{sgn}(\text{burst}_{prev} - Q_{curr}) \cdot \Delta - \beta \cdot \max(0, |Q_{ready}| - 3), Q_{min}, Q_{max} \right)$$
+          </div>
+
+          <div class="math-principles">
+            <div class="principle-box">
+              <div class="principle-title" style="color: var(--accent-cyan);">⚡ CPU-bound Expansion</div>
+              <p style="color: var(--text-muted); font-size: 0.8rem;">If a task exhausts its assigned quantum (\(\text{burst}_{avg} \ge Q\)), its slice expands (\(+1\)) up to \(Q_{max}\) (12 ticks). This reduces context-switch overhead and cache invalidation.</p>
+            </div>
+
+            <div class="principle-box">
+              <div class="principle-title" style="color: var(--accent-emerald);">🎯 Interactive Compression</div>
+              <p style="color: var(--text-muted); font-size: 0.8rem;">If a task yields early (\(\text{burst}_{avg} \le Q_{min}\)), its quantum contracts to \(Q_{min}\) (2 ticks), prioritizing snappy response times and lower latency for short bursts.</p>
+            </div>
+
+            <div class="principle-box">
+              <div class="principle-title" style="color: var(--accent-rose);">⚖️ Queue Pressure Relief</div>
+              <p style="color: var(--text-muted); font-size: 0.8rem;">When the ready queue depth exceeds 3 waiting tasks, a load penalty scales down quanta to prevent long queue waiting times for arriving processes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    Mayaank N | Department of Computer Science & Engineering | CA6 Micro-OS Project
+  </footer>
+
+</div>
+
+<script>
+// --- Task Workload Presets ---
+const PRESETS = {
+  default: [
+    { id: "Task-1", name: "Compute-Worker", arrival: 0, burst: 18, type: "CPU-Bound" },
+    { id: "Task-2", name: "Telemetry-Worker", arrival: 0, burst: 12, type: "Balanced" },
+    { id: "Task-3", name: "Burst-Worker", arrival: 0, burst: 6, type: "Interactive/Yielding" },
+  ],
+  heavy: [
+    { id: "Task-1", name: "Matrix-Multiply", arrival: 0, burst: 25, type: "CPU-Bound" },
+    { id: "Task-2", name: "FFT-Calculation", arrival: 1, burst: 20, type: "CPU-Bound" },
+    { id: "Task-3", name: "Crypto-Hasher", arrival: 2, burst: 30, type: "CPU-Bound" },
+  ],
+  interactive: [
+    { id: "Task-1", name: "Keyboard-Poller", arrival: 0, burst: 4, type: "Interactive" },
+    { id: "Task-2", name: "UI-Renderer", arrival: 1, burst: 6, type: "Interactive" },
+    { id: "Task-3", name: "Packet-Dispatcher", arrival: 2, burst: 5, type: "Interactive" },
+  ],
+  mixed: [
+    { id: "Task-1", name: "Database-Query", arrival: 0, burst: 15, type: "CPU-Bound" },
+    { id: "Task-2", name: "IPC-Listener", arrival: 0, burst: 4, type: "Interactive" },
+    { id: "Task-3", name: "Log-Flusher", arrival: 2, burst: 8, type: "Balanced" },
+    { id: "Task-4", name: "Physics-Engine", arrival: 4, burst: 22, type: "CPU-Bound" },
+  ]
+};
+
+const TASK_COLORS = [
+  "#38bdf8", // Sky blue
+  "#10b981", // Emerald green
+  "#f59e0b", // Amber
+  "#a855f7", // Purple
+  "#ec4899", // Pink
+  "#6366f1", // Indigo
+];
+
+// --- Core Scheduler Simulation Engine (1:1 with Python app.py) ---
+function simulateScheduler(tasksConfig, baseQ, minQ, maxQ, isDynamic) {
+  const tasks = tasksConfig.map(t => ({
+    id: t.id,
+    name: t.name,
+    arrival: t.arrival,
+    burst: t.burst,
+    remaining: t.burst,
+    assignedQ: baseQ,
+    burstHistory: [baseQ],
+    firstRun: null,
+    completion: null,
+    waitTime: 0,
+    turnaround: 0,
+    type: t.type
+  }));
+
+  let currentTime = 0;
+  const readyQueue = [];
+  const timeline = [];
+  let contextSwitches = 0;
+  let completed = 0;
+  const numTasks = tasks.length;
+
+  for (let i = 0; i < numTasks; i++) {
+    if (tasks[i].arrival === 0) {
+      readyQueue.push(i);
+    }
+  }
+
+  while (completed < numTasks) {
+    if (readyQueue.length === 0) {
+      timeline.push({ Task: "Idle", Start: currentTime, End: currentTime + 1, Quantum: 1, Executed: 1, isIdle: true });
+      currentTime++;
+      for (let i = 0; i < numTasks; i++) {
+        if (tasks[i].arrival === currentTime && tasks[i].remaining > 0 && !readyQueue.includes(i)) {
+          readyQueue.push(i);
+        }
+      }
+      continue;
+    }
+
+    const taskIdx = readyQueue.shift();
+    const t = tasks[taskIdx];
+
+    if (t.firstRun === null) {
+      t.firstRun = currentTime;
+    }
+
+    let q = baseQ;
+    if (isDynamic) {
+      const avgBurst = t.burstHistory.reduce((a, b) => a + b, 0) / t.burstHistory.length;
+      q = t.assignedQ;
+      if (avgBurst >= t.assignedQ) {
+        q = Math.min(maxQ, q + 1);
+      } else if (avgBurst <= minQ) {
+        q = Math.max(minQ, q - 1);
+      }
+      if (readyQueue.length > 3) {
+        q = Math.max(minQ, q - 1);
+      }
+      t.assignedQ = q;
+    }
+
+    const sliceTime = Math.min(q, t.remaining);
+    const startTime = currentTime;
+    currentTime += sliceTime;
+    t.remaining -= sliceTime;
+    t.burstHistory.push(sliceTime);
+    if (t.burstHistory.length > 4) {
+      t.burstHistory.shift();
+    }
+
+    timeline.push({
+      Task: `${t.id} (${t.name})`,
+      taskId: t.id,
+      taskName: t.name,
+      Start: startTime,
+      End: currentTime,
+      Quantum: q,
+      Executed: sliceTime,
+      isIdle: false
+    });
+
+    for (let i = 0; i < numTasks; i++) {
+      const other = tasks[i];
+      if (other.arrival > startTime && other.arrival <= currentTime && other.remaining > 0 && !readyQueue.includes(i) && i !== taskIdx) {
+        readyQueue.push(i);
+      }
+    }
+
+    if (t.remaining === 0) {
+      t.completion = currentTime;
+      t.turnaround = t.completion - t.arrival;
+      t.waitTime = t.turnaround - t.burst;
+      completed++;
+    } else {
+      readyQueue.push(taskIdx);
+      contextSwitches++;
+    }
+  }
+
+  const avgWait = tasks.reduce((sum, t) => sum + t.waitTime, 0) / numTasks;
+  const avgTat = tasks.reduce((sum, t) => sum + t.turnaround, 0) / numTasks;
+
+  return {
+    tasks,
+    timeline,
+    contextSwitches,
+    avgWait,
+    avgTat,
+    totalTime: currentTime,
+  };
+}
+
+// --- DOM Elements & State ---
+const presetSelect = document.getElementById("preset-select");
+const presetTaskList = document.getElementById("preset-task-list");
+const sliderBaseQ = document.getElementById("slider-base-q");
+const sliderMinQ = document.getElementById("slider-min-q");
+const sliderMaxQ = document.getElementById("slider-max-q");
+const valBaseQ = document.getElementById("val-base-q");
+const valMinQ = document.getElementById("val-min-q");
+const valMaxQ = document.getElementById("val-max-q");
+const labelFixedQ = document.getElementById("label-fixed-q");
+const resetBtn = document.getElementById("reset-btn");
+
+const metricDynCs = document.getElementById("metric-dyn-cs");
+const metricFixedCs = document.getElementById("metric-fixed-cs");
+const metricDynWait = document.getElementById("metric-dyn-wait");
+const metricDynTat = document.getElementById("metric-dyn-tat");
+const deltaCs = document.getElementById("delta-cs");
+const deltaWait = document.getElementById("delta-wait");
+const deltaTat = document.getElementById("delta-tat");
+
+const canvasDyn = document.getElementById("gantt-canvas-dynamic");
+const canvasFixed = document.getElementById("gantt-canvas-fixed");
+const legendDyn = document.getElementById("legend-dynamic");
+const legendFixed = document.getElementById("legend-fixed");
+const tooltip = document.getElementById("gantt-tooltip");
+
+const tableDynBody = document.querySelector("#table-dynamic tbody");
+const tableFixedBody = document.querySelector("#table-fixed tbody");
+
+// Tab Switching
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+// Update Preset Preview List
+function updatePresetTaskList(presetKey) {
+  const tasks = PRESETS[presetKey];
+  presetTaskList.innerHTML = tasks.map(t => {
+    const badgeClass = t.type === "CPU-Bound" ? "badge-cpu" : (t.type === "Interactive" || t.type === "Interactive/Yielding" ? "badge-io" : "badge-bal");
+    return `<div class="preset-task-item">
+      <span><strong>${t.id}:</strong> ${t.name}</span>
+      <span class="badge-pill ${badgeClass}">Burst: ${t.burst}</span>
+    </div>`;
+  }).join("");
+}
+
+// Canvas Gantt Chart Rendering with High-DPI support
+function renderGantt(canvas, result, distinctTasks) {
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const width = rect.width || 940;
+  const height = 220;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, width, height);
+
+  const totalTime = Math.max(result.totalTime, 1);
+  const marginLeft = 140;
+  const marginRight = 24;
+  const marginTop = 30;
+  const marginBottom = 34;
+  const chartWidth = width - marginLeft - marginRight;
+  const chartHeight = height - marginTop - marginBottom;
+
+  const taskRows = distinctTasks.map((t, idx) => ({ id: t.id, name: t.name, label: `${t.id} (${t.name})`, index: idx }));
+  const rowHeight = chartHeight / Math.max(taskRows.length, 1);
+
+  // Time gridlines & axis
+  ctx.strokeStyle = "#1e293b";
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px JetBrains Mono, monospace";
+  ctx.textAlign = "center";
+
+  const numTicks = Math.min(totalTime, 15);
+  const step = Math.ceil(totalTime / numTicks);
+
+  for (let t = 0; t <= totalTime; t += step) {
+    const x = marginLeft + (t / totalTime) * chartWidth;
+    ctx.beginPath();
+    ctx.moveTo(x, marginTop - 4);
+    ctx.lineTo(x, height - marginBottom);
+    ctx.stroke();
+    ctx.fillText(`${t}`, x, height - marginBottom + 16);
+  }
+  ctx.fillText("Simulation Time (Ticks)", marginLeft + chartWidth / 2, height - 4);
+
+  // Task labels (Y-axis)
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  taskRows.forEach(row => {
+    const y = marginTop + row.index * rowHeight + rowHeight / 2;
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "11px -apple-system, sans-serif";
+    ctx.fillText(row.label, marginLeft - 12, y);
+
+    // Row divider
+    ctx.strokeStyle = "rgba(255,255,255,0.03)";
+    ctx.beginPath();
+    ctx.moveTo(marginLeft, marginTop + row.index * rowHeight);
+    ctx.lineTo(marginLeft + chartWidth, marginTop + row.index * rowHeight);
+    ctx.stroke();
+  });
+
+  // Store slices for interactive hover hit-testing
+  canvas.slices = [];
+
+  // Draw execution slices
+  result.timeline.forEach(slice => {
+    if (slice.isIdle) return;
+    const taskIdx = taskRows.findIndex(r => r.label === slice.Task);
+    if (taskIdx === -1) return;
+
+    const x = marginLeft + (slice.Start / totalTime) * chartWidth;
+    const sliceW = Math.max(((slice.End - slice.Start) / totalTime) * chartWidth, 2);
+    const y = marginTop + taskIdx * rowHeight + 4;
+    const sliceH = rowHeight - 8;
+    const color = TASK_COLORS[taskIdx % TASK_COLORS.length];
+
+    // Bar rectangle
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    const r = Math.min(4, sliceW / 2);
+    ctx.roundRect ? ctx.roundRect(x, y, sliceW, sliceH, r) : ctx.rect(x, y, sliceW, sliceH);
+    ctx.fill();
+
+    // Subtle border
+    ctx.strokeStyle = "rgba(0,0,0,0.2)";
+    ctx.stroke();
+
+    // Slice duration text if bar is wide enough
+    if (sliceW > 20) {
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 10px JetBrains Mono, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`${slice.Executed}`, x + sliceW / 2, y + sliceH / 2);
+    }
+
+    canvas.slices.push({
+      x, y, w: sliceW, h: sliceH, slice, color
+    });
+  });
+}
+
+// Hover Tooltip Listener
+function setupGanttHover(canvas) {
+  canvas.addEventListener("mousemove", e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    if (!canvas.slices) return;
+    const hit = canvas.slices.find(s => mx >= s.x && mx <= s.x + s.w && my >= s.y && my <= s.y + s.h);
+
+    if (hit) {
+      tooltip.style.display = "block";
+      tooltip.style.left = `${e.pageX + 12}px`;
+      tooltip.style.top = `${e.pageY + 12}px`;
+      tooltip.innerHTML = `
+        <div style="font-weight: 700; color: ${hit.color}; margin-bottom: 4px;">${hit.slice.Task}</div>
+        <div>Time: <strong>${hit.slice.Start} &rarr; ${hit.slice.End} ticks</strong></div>
+        <div>Duration: <strong>${hit.slice.Executed} ticks</strong></div>
+        <div>Assigned Quantum: <strong>${hit.slice.Quantum} ticks</strong></div>
+      `;
+    } else {
+      tooltip.style.display = "none";
+    }
+  });
+
+  canvas.addEventListener("mouseleave", () => {
+    tooltip.style.display = "none";
+  });
+}
+
+setupGanttHover(canvasDyn);
+setupGanttHover(canvasFixed);
+
+// Render Legends
+function renderLegend(container, distinctTasks) {
+  container.innerHTML = distinctTasks.map((t, idx) => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background: ${TASK_COLORS[idx % TASK_COLORS.length]}"></div>
+      <span>${t.id}: ${t.name}</span>
+    </div>
+  `).join("");
+}
+
+// Render Table Rows
+function renderTable(tbody, tasks, isDynamic, baseQ) {
+  tbody.innerHTML = tasks.map(t => `
+    <tr>
+      <td style="font-weight: 700; color: #fff;">${t.id}</td>
+      <td>${t.name}</td>
+      <td><span class="badge-pill ${t.type === 'CPU-Bound' ? 'badge-cpu' : (t.type === 'Interactive' || t.type === 'Interactive/Yielding' ? 'badge-io' : 'badge-bal')}">${t.type}</span></td>
+      <td>${t.arrival}</td>
+      <td>${t.burst}</td>
+      <td style="font-weight: 700; color: var(--accent-cyan);">${isDynamic ? t.assignedQ + " ticks" : baseQ + " ticks"}</td>
+      <td>${t.waitTime}</td>
+      <td>${t.turnaround}</td>
+    </tr>
+  `).join("");
+}
+
+// --- Main Simulation & Reactivity Controller ---
+function runSimulation() {
+  const presetKey = presetSelect.value;
+  const tasksConfig = PRESETS[presetKey];
+  const baseQ = parseInt(sliderBaseQ.value, 10);
+  const minQ = parseInt(sliderMinQ.value, 10);
+  const maxQ = parseInt(sliderMaxQ.value, 10);
+
+  // Update slider badge labels
+  valBaseQ.textContent = `${baseQ} ticks`;
+  valMinQ.textContent = `${minQ} ticks`;
+  valMaxQ.textContent = `${maxQ} ticks`;
+  labelFixedQ.textContent = baseQ;
+
+  // Execute dual simulations
+  const resFixed = simulateScheduler(tasksConfig, baseQ, minQ, maxQ, false);
+  const resDynamic = simulateScheduler(tasksConfig, baseQ, minQ, maxQ, true);
+
+  // Update Performance Telemetry
+  metricDynCs.textContent = resDynamic.contextSwitches;
+  metricFixedCs.textContent = resFixed.contextSwitches;
+  metricDynWait.textContent = resDynamic.avgWait.toFixed(2);
+  metricDynTat.textContent = resDynamic.avgTat.toFixed(2);
+
+  const csDiff = resFixed.contextSwitches - resDynamic.contextSwitches;
+  const waitDiff = resFixed.avgWait - resDynamic.avgWait;
+  const tatDiff = resFixed.avgTat - resDynamic.avgTat;
+
+  // Delta Badges (improvements in green)
+  deltaCs.textContent = csDiff > 0 ? `-${csDiff} switches` : (csDiff < 0 ? `+${Math.abs(csDiff)}` : "0");
+  deltaCs.className = `metric-delta ${csDiff >= 0 ? 'delta-green' : 'delta-red'}`;
+
+  deltaWait.textContent = waitDiff > 0 ? `-${waitDiff.toFixed(2)} ticks` : (waitDiff < 0 ? `+${Math.abs(waitDiff).toFixed(2)}` : "0.00");
+  deltaWait.className = `metric-delta ${waitDiff >= 0 ? 'delta-green' : 'delta-neutral'}`;
+
+  deltaTat.textContent = tatDiff > 0 ? `-${tatDiff.toFixed(2)} ticks` : (tatDiff < 0 ? `+${Math.abs(tatDiff).toFixed(2)}` : "0.00");
+  deltaTat.className = `metric-delta ${tatDiff >= 0 ? 'delta-green' : 'delta-neutral'}`;
+
+  // Render Gantt Timelines
+  renderGantt(canvasDyn, resDynamic, tasksConfig);
+  renderGantt(canvasFixed, resFixed, tasksConfig);
+
+  // Render Legends
+  renderLegend(legendDyn, tasksConfig);
+  renderLegend(legendFixed, tasksConfig);
+
+  // Render Tables
+  renderTable(tableDynBody, resDynamic.tasks, true, baseQ);
+  renderTable(tableFixedBody, resFixed.tasks, false, baseQ);
+}
+
+// Event Listeners
+presetSelect.addEventListener("change", () => {
+  updatePresetTaskList(presetSelect.value);
+  runSimulation();
+});
+
+sliderBaseQ.addEventListener("input", runSimulation);
+sliderMinQ.addEventListener("input", runSimulation);
+sliderMaxQ.addEventListener("input", runSimulation);
+
+resetBtn.addEventListener("click", () => {
+  sliderBaseQ.value = 4;
+  sliderMinQ.value = 2;
+  sliderMaxQ.value = 12;
+  presetSelect.value = "default";
+  updatePresetTaskList("default");
+  runSimulation();
+});
+
+// Window resize re-render for responsive canvas
+window.addEventListener("resize", () => {
+  const tasksConfig = PRESETS[presetSelect.value];
+  const baseQ = parseInt(sliderBaseQ.value, 10);
+  const minQ = parseInt(sliderMinQ.value, 10);
+  const maxQ = parseInt(sliderMaxQ.value, 10);
+  const resFixed = simulateScheduler(tasksConfig, baseQ, minQ, maxQ, false);
+  const resDynamic = simulateScheduler(tasksConfig, baseQ, minQ, maxQ, true);
+  renderGantt(canvasDyn, resDynamic, tasksConfig);
+  renderGantt(canvasFixed, resFixed, tasksConfig);
+});
+
+// Initial boot
+updatePresetTaskList("default");
+runSimulation();
+</script>
+
+</body>
+</html>
