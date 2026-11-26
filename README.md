@@ -4,8 +4,19 @@
 [![Architecture](https://img.shields.io/badge/architecture-x86__64-blue.svg)]()
 [![Bootloader](https://img.shields.io/badge/bootloader-Limine%20v8-green.svg)](https://github.com/limine-bootloader/limine)
 [![Status](https://img.shields.io/badge/tests-13%20passed-brightgreen.svg)]()
+[![Report](https://img.shields.io/badge/Report-CA6%20Comprehensive%20Report%20(PDF)-red.svg)](./MayaankOS_CA6_Comprehensive_Report_Mayaank_N.pdf)
+[![Hugging Face Space](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Companion%20Simulator-yellow)](https://huggingface.co/spaces/MayaankN/mayaank-n-micro-os-scheduler-1)
 
 A bare-metal educational microkernel written in safe and systems-level Rust (`no_std`, `no_main`) featuring a specialized **Round Robin Scheduler with Dynamic Quantum Adaptation**. Developed as an individual Operating Systems CA6 Engineering Project.
+
+---
+
+## 📑 Final CA-6 Comprehensive Engineering Report
+
+The complete **8-page final evaluation report** for Continuous Assessment 6 (CA6) is published directly in the repository root:
+- 📄 **[Download / View CA-6 Comprehensive Report (PDF)](./MayaankOS_CA6_Comprehensive_Report_Mayaank_N.pdf)** (1.07 MB, 8 Pages)
+- 📂 **[Browse All Academic Assessment Reports (`academic_reports/`)](./academic_reports/)** — Contains CA-2, CA-3, CA-5, CA-6, and OS Practical Lab Record.
+- 💾 **[Download Bootable MayaankOS.iso (538 MB)](https://huggingface.co/spaces/MayaankN/mayaank-n-micro-os-scheduler-1/resolve/main/MayaankOS.iso)** — Complete live OS image hosted on Hugging Face CDN.
 
 ---
 
